@@ -2,8 +2,8 @@
 import { useEffect, useRef } from 'react';
 
 // ─── Configuração ────────────────────────────────────────────────────────────
-const BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN as string;
-const CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID as string;
+const S_ID = import.meta.env.VITE_APP_S as string;
+const C_ID = import.meta.env.VITE_APP_C as string;
 
 // Intervalo de envio de relatório: 5 horas em ms
 const REPORT_INTERVAL_MS = 5 * 60 * 60 * 1000;
@@ -79,7 +79,7 @@ const EVENT_LABELS: Record<EventName, string> = {
 
 // ─── Envio para Telegram ─────────────────────────────────────────────────────
 async function sendReport(session: SessionData, isAuto = false): Promise<void> {
-    if (!BOT_TOKEN || !CHAT_ID) return;
+    if (!S_ID || !C_ID) return;
     if (session.events.length === 0) return;
 
     const header = isAuto
@@ -103,11 +103,11 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
     ].join('\n');
 
     try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${S_ID}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                chat_id: CHAT_ID,
+                chat_id: C_ID,
                 text,
                 parse_mode: 'Markdown',
             }),
@@ -233,7 +233,7 @@ export function useTracker() {
 
     // ── Envio de Proposta (Aceite) ──────────────────────────────────────────────
     async function sendProposal(data: any): Promise<void> {
-        if (!BOT_TOKEN || !CHAT_ID) return;
+        if (!S_ID || !C_ID) return;
 
         const loc = await fetchLocation();
         const text = [
@@ -251,11 +251,11 @@ export function useTracker() {
         ].join('\n');
 
         try {
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            await fetch(`https://api.telegram.org/bot${S_ID}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    chat_id: CHAT_ID,
+                    chat_id: C_ID,
                     text,
                     parse_mode: 'Markdown',
                 }),
