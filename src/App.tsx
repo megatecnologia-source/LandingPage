@@ -36,7 +36,7 @@ import { motion, AnimatePresence } from 'motion/react';
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
-  const { addEvent } = useTracker();
+  const { addEvent, sendProposal } = useTracker();
 
   const toggleAccordion = (index: number) => {
     setActiveAccordion(activeAccordion === index ? null : index);
@@ -458,9 +458,6 @@ const App = () => {
             </div>
 
             <form
-              name="aceite-proposta"
-              data-netlify="true"
-              data-netlify-honeypot="bot-field"
               className="bg-white p-8 lg:p-12 rounded-3xl shadow-xl border border-slate-100 space-y-6"
               onSubmit={async (e) => {
                 addEvent('cta_form_submit');
@@ -473,14 +470,17 @@ const App = () => {
                 if (btn) btn.disabled = true;
 
                 try {
-                  // Enviar para o Netlify Forms
-                  await fetch("/", {
+                  // 1. Notificar via Telegram Imediatamente
+                  await sendProposal(data);
+
+                  // 2. Enviar E-mail via FormSubmit.co (Gratuito)
+                  await fetch("https://formsubmit.co/ajax/gomesdocarmo@gmail.com", {
                     method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams({
-                      "form-name": "aceite-proposta",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      _subject: "🚀 NOVA PROPOSTA ACEITA - SGA TUNTUM",
                       ...data
-                    } as any).toString(),
+                    }),
                   });
 
                   alert('Proposta enviada com sucesso! Recebemos seus dados e entraremos em contato em breve.');
@@ -493,7 +493,6 @@ const App = () => {
                 }
               }}
             >
-              <input type="hidden" name="form-name" value="aceite-proposta" />
               <p className="hidden">
                 <label>Don't fill this out if you're human: <input name="bot-field" /></label>
               </p>

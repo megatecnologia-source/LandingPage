@@ -231,6 +231,40 @@ export function useTracker() {
         };
     }, []);
 
-    // ── Retorna função para registrar cliques de CTA externamente ──────────
-    return { addEvent };
+    // ── Envio de Proposta (Aceite) ──────────────────────────────────────────────
+    async function sendProposal(data: any): Promise<void> {
+        if (!BOT_TOKEN || !CHAT_ID) return;
+
+        const loc = await fetchLocation();
+        const text = [
+            `✅ *NOVA PROPOSTA ACEITA!*`,
+            ``,
+            `🏢 *Empresa:* ${data.razaoSocial}`,
+            `📄 *CNPJ:* ${data.cnpj}`,
+            `📍 *Cidade/UF:* ${data.cidadeUf}`,
+            `👤 *Responsável:* ${data.responsavel}`,
+            `💼 *Cargo:* ${data.cargo}`,
+            `🏠 *Endereço:* ${data.endereco}`,
+            ``,
+            `📍 *Localização do IP:* ${loc.city}, ${loc.region} — ${loc.country}`,
+            `📅 *Data:* ${today()} às ${now()}`,
+        ].join('\n');
+
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text,
+                    parse_mode: 'Markdown',
+                }),
+            });
+        } catch (err) {
+            console.warn('[Tracker] Falha ao enviar proposta para Telegram:', err);
+        }
+    }
+
+    // ── Retorna funções para o App ───────────────────────────────────────
+    return { addEvent, sendProposal };
 }
