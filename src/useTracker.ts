@@ -2,8 +2,8 @@
 import { useEffect, useRef } from 'react';
 
 // ─── Configuração ────────────────────────────────────────────────────────────
-const S_ID = import.meta.env.VITE_APP_S as string;
-const C_ID = import.meta.env.VITE_APP_C as string;
+// Não usamos mais tokens no frontend! As mensagens vão via /api/telegram.
+const TELEGRAM_API_URL = '/api/telegram';
 
 // Intervalo de envio de relatório: 5 horas em ms
 const REPORT_INTERVAL_MS = 5 * 60 * 60 * 1000;
@@ -79,7 +79,6 @@ const EVENT_LABELS: Record<EventName, string> = {
 
 // ─── Envio para Telegram ─────────────────────────────────────────────────────
 async function sendReport(session: SessionData, isAuto = false): Promise<void> {
-    if (!S_ID || !C_ID) return;
     if (session.events.length === 0) return;
 
     const header = isAuto
@@ -103,11 +102,10 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
     ].join('\n');
 
     try {
-        await fetch(`https://api.telegram.org/bot${S_ID}/sendMessage`, {
+        await fetch(TELEGRAM_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                chat_id: C_ID,
                 text,
                 parse_mode: 'Markdown',
             }),
@@ -117,7 +115,7 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
         session.reportSentAt = Date.now();
         saveSession(session);
     } catch (err) {
-        console.warn('[Tracker] Falha ao enviar para Telegram:', err);
+        console.warn('[Tracker] Falha ao enviar para API:', err);
     }
 }
 
@@ -233,11 +231,6 @@ export function useTracker() {
 
     // ── Envio de Proposta (Aceite) ──────────────────────────────────────────────
     async function sendProposal(data: any): Promise<void> {
-        if (!S_ID || !C_ID) {
-            console.error('[Tracker] Falha no Telegram: Variáveis VITE_APP_S ou VITE_APP_C não configuradas no Netlify.');
-            return;
-        }
-
         const loc = await fetchLocation();
         const text = [
             `✅ *NOVA PROPOSTA ACEITA!*`,
@@ -254,11 +247,10 @@ export function useTracker() {
         ].join('\n');
 
         try {
-            const response = await fetch(`https://api.telegram.org/bot${S_ID}/sendMessage`, {
+            const response = await fetch(TELEGRAM_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    chat_id: C_ID,
                     text,
                     parse_mode: 'Markdown',
                 }),
@@ -266,10 +258,10 @@ export function useTracker() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('[Tracker] Erro na API do Telegram:', errorData);
+                console.error('[Tracker] Erro na nossa API de Telegram:', errorData);
             }
         } catch (err) {
-            console.warn('[Tracker] Falha ao enviar proposta para Telegram:', err);
+            console.warn('[Tracker] Falha ao enviar proposta para API:', err);
         }
     }
 
