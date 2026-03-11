@@ -496,37 +496,43 @@ const App = () => {
               <p className="hidden">
                 <label>Don't fill this out if you're human: <input name="bot-field" /></label>
               </p>
-              <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Razão Social</label>
-                  <input name="razaoSocial" type="text" required placeholder="Nome da empresa" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Empresa</label>
+                  <input name="empresa" type="text" required placeholder="Nome da empresa" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">CNPJ</label>
-                  <input name="cnpj" type="text" required placeholder="00.000.000/0000-00" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço</label>
+                  <input name="endereco" type="text" placeholder="Endereço completo" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Endereço</label>
-                <input name="endereco" type="text" placeholder="Endereço completo" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cidade / UF</label>
-                  <input name="cidadeUf" type="text" placeholder="Cidade / UF" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cidade</label>
+                    <input name="cidade" type="text" placeholder="Sua cidade" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Responsável</label>
+                    <input name="responsavel" type="text" required placeholder="Nome completo" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Responsável</label>
-                  <input name="responsavel" type="text" required placeholder="Nome completo" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Telefone</label>
+                    <input name="telefone" type="tel" required placeholder="(00) 00000-0000" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
+                    <input name="email" type="email" required placeholder="seu@email.com" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
+                  </div>
                 </div>
+
+                <button type="submit" className="w-full py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Aprovar Proposta
+                </button>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Cargo</label>
-                <input name="cargo" type="text" placeholder="Cargo do responsável" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
-              </div>
-              <button type="submit" className="w-full py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                Aprovar Proposta
-              </button>
             </form>
           </div>
         </section>

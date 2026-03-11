@@ -233,25 +233,28 @@ export function useTracker() {
 
     // ── Envio de Proposta (Aceite) ──────────────────────────────────────────────
     async function sendProposal(data: any): Promise<void> {
-        if (!S_ID || !C_ID) return;
+        if (!S_ID || !C_ID) {
+            console.error('[Tracker] Falha no Telegram: Variáveis VITE_APP_S ou VITE_APP_C não configuradas no Netlify.');
+            return;
+        }
 
         const loc = await fetchLocation();
         const text = [
             `✅ *NOVA PROPOSTA ACEITA!*`,
             ``,
-            `🏢 *Empresa:* ${data.razaoSocial}`,
-            `📄 *CNPJ:* ${data.cnpj}`,
-            `📍 *Cidade/UF:* ${data.cidadeUf}`,
-            `👤 *Responsável:* ${data.responsavel}`,
-            `💼 *Cargo:* ${data.cargo}`,
+            `🏢 *Empresa:* ${data.empresa}`,
             `🏠 *Endereço:* ${data.endereco}`,
+            `📍 *Cidade:* ${data.cidade}`,
+            `👤 *Responsável:* ${data.responsavel}`,
+            `📞 *Telefone:* ${data.telefone}`,
+            `📧 *E-mail:* ${data.email}`,
             ``,
             `📍 *Localização do IP:* ${loc.city}, ${loc.region} — ${loc.country}`,
             `📅 *Data:* ${today()} às ${now()}`,
         ].join('\n');
 
         try {
-            await fetch(`https://api.telegram.org/bot${S_ID}/sendMessage`, {
+            const response = await fetch(`https://api.telegram.org/bot${S_ID}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -260,6 +263,11 @@ export function useTracker() {
                     parse_mode: 'Markdown',
                 }),
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('[Tracker] Erro na API do Telegram:', errorData);
+            }
         } catch (err) {
             console.warn('[Tracker] Falha ao enviar proposta para Telegram:', err);
         }
