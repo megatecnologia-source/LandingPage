@@ -53,7 +53,11 @@ const handler: Handler = async (event) => {
         });
 
         const data = await response.json();
-        console.log('Resposta do Telegram:', response.status, data.ok ? 'Sucesso' : 'Erro');
+        if (!data.ok) {
+            console.error('Erro na API do Telegram:', data.description);
+        } else {
+            console.log('Resposta do Telegram: Sucesso');
+        }
 
         return {
             statusCode: response.status,

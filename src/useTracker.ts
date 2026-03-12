@@ -34,6 +34,14 @@ interface SessionData {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const SESSION_KEY = 'mega_tracker_session';
 
+function escapeHTML(str: string): string {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 function now(): string {
     return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
@@ -82,22 +90,22 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
     if (session.events.length === 0) return;
 
     const header = isAuto
-        ? `📊 *Relatório Automático — ${session.openDate}*`
-        : `📊 *Relatório Final da Sessão — ${session.openDate}*`;
+        ? `📊 <b>Relatório Automático — ${session.openDate}</b>`
+        : `📊 <b>Relatório Final da Sessão — ${session.openDate}</b>`;
 
-    const location = `📍 *Localização:* ${session.city}, ${session.region} — ${session.country}`;
-    const openInfo = `🕐 *Hora de abertura:* ${session.openTime}`;
-    const eventLines = session.events.map(e => `• ${EVENT_LABELS[e.name]} *(${e.time})*`).join('\n');
+    const location = `📍 <b>Localização:</b> ${escapeHTML(session.city)}, ${escapeHTML(session.region)} — ${escapeHTML(session.country)}`;
+    const openInfo = `🕐 <b>Hora de abertura:</b> ${session.openTime}`;
+    const eventLines = session.events.map(e => `• ${escapeHTML(EVENT_LABELS[e.name])} <b>(${e.time})</b>`).join('\n');
 
     const text = [
-        `🔔 *Landing Page Mega Tecnologia*`,
+        `🔔 <b>Landing Page Mega Tecnologia</b>`,
         ``,
         header,
         ``,
         location,
         openInfo,
         ``,
-        `📋 *Eventos registrados:*`,
+        `📋 <b>Eventos registrados:</b>`,
         eventLines,
     ].join('\n');
 
@@ -108,7 +116,7 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 text,
-                parse_mode: 'Markdown',
+                parse_mode: 'HTML',
             }),
         });
 
@@ -241,17 +249,17 @@ export function useTracker() {
     async function sendProposal(data: any): Promise<void> {
         const loc = await fetchLocation();
         const text = [
-            `✅ *NOVA PROPOSTA ACEITA!*`,
+            `✅ <b>NOVA PROPOSTA ACEITA!</b>`,
             ``,
-            `🏢 *Empresa:* ${data.empresa}`,
-            `🏠 *Endereço:* ${data.endereco}`,
-            `📍 *Cidade:* ${data.cidade}`,
-            `👤 *Responsável:* ${data.responsavel}`,
-            `📞 *Telefone:* ${data.telefone}`,
-            `📧 *E-mail:* ${data.email}`,
+            `🏢 <b>Empresa:</b> ${escapeHTML(data.empresa)}`,
+            `🏠 <b>Endereço:</b> ${escapeHTML(data.endereco)}`,
+            `📍 <b>Cidade:</b> ${escapeHTML(data.cidade)}`,
+            `👤 <b>Responsável:</b> ${escapeHTML(data.responsavel)}`,
+            `📞 <b>Telefone:</b> ${escapeHTML(data.telefone)}`,
+            `📧 <b>E-mail:</b> ${escapeHTML(data.email)}`,
             ``,
-            `📍 *Localização do IP:* ${loc.city}, ${loc.region} — ${loc.country}`,
-            `📅 *Data:* ${today()} às ${now()}`,
+            `📍 <b>Localização do IP:</b> ${escapeHTML(loc.city)}, ${escapeHTML(loc.region)} — ${escapeHTML(loc.country)}`,
+            `📅 <b>Data:</b> ${today()} às ${now()}`,
         ].join('\n');
 
         try {
@@ -261,7 +269,7 @@ export function useTracker() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     text,
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                 }),
             });
 
