@@ -102,7 +102,8 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
     ].join('\n');
 
     try {
-        await fetch(TELEGRAM_API_URL, {
+        console.log('[Tracker] Enviando relatório via API...');
+        const response = await fetch(TELEGRAM_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -111,11 +112,18 @@ async function sendReport(session: SessionData, isAuto = false): Promise<void> {
             }),
         });
 
+        if (!response.ok) {
+            const errBody = await response.text();
+            console.error('[Tracker] Falha no envio do relatório:', response.status, errBody);
+        } else {
+            console.log('[Tracker] Relatório enviado com sucesso.');
+        }
+
         // Atualiza timestamp do último envio
         session.reportSentAt = Date.now();
         saveSession(session);
     } catch (err) {
-        console.warn('[Tracker] Falha ao enviar para API:', err);
+        console.warn('[Tracker] Erro técnico ao chamar API:', err);
     }
 }
 
@@ -247,6 +255,7 @@ export function useTracker() {
         ].join('\n');
 
         try {
+            console.log('[Tracker] Enviando PROPOSTA via API...');
             const response = await fetch(TELEGRAM_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -257,11 +266,13 @@ export function useTracker() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('[Tracker] Erro na nossa API de Telegram:', errorData);
+                const errorData = await response.text();
+                console.error('[Tracker] Erro ao enviar proposta:', response.status, errorData);
+            } else {
+                console.log('[Tracker] Proposta enviada ao Telegram com sucesso!');
             }
         } catch (err) {
-            console.warn('[Tracker] Falha ao enviar proposta para API:', err);
+            console.warn('[Tracker] Erro técnico ao enviar proposta:', err);
         }
     }
 
