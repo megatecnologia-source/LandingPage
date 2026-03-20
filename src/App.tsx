@@ -529,6 +529,11 @@ const App = () => {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Observação</label>
+                  <textarea name="observacao" rows={4} placeholder="Digite uma mensagem ou observação..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 resize-none"></textarea>
+                </div>
+
                 <button type="submit" className="w-full py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
                   Aprovar Proposta
                 </button>
