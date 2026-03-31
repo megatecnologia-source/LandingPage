@@ -1,21 +1,56 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img src="https://res.cloudinary.com/dplhygs4v/image/upload/v1772912453/1_oefzgj.png" alt="Mega Tecnologia Logo" width="200" />
+  <h1>SGA Tuntum - Sistema de Gerenciamento de Senhas</h1>
+  <p><strong>Landing Page Profissional e Sistema de Captação de Leads</strong></p>
+  
+  [![Build and Deploy](https://github.com/emanuelfabricio/mega-tecnologia/actions/workflows/deploy.yml/badge.svg)](https://github.com/emanuelfabricio/mega-tecnologia/actions/workflows/deploy.yml)
 </div>
 
-# Run and deploy your AI Studio app
+---
 
-This contains everything you need to run your app locally.
+## 🚀 Sobre o Projeto
 
-View your app in AI Studio: https://ai.studio/apps/10aa9a1c-57d9-43eb-9b4f-de975067abf4
+Este projeto é uma Landing Page de alta performance desenvolvida para a **Mega Tecnologia**, focada na apresentação do **SGA (Sistema de Gerenciamento de Senhas)** para a prefeitura de Tuntum.
 
-## Run Locally
+A página foi construída com tecnologias modernas para garantir velocidade, SEO otimizado e uma experiência de usuário premium, incluindo notificações automáticas via Telegram e E-mail para cada nova lead captada.
 
-**Prerequisites:**  Node.js
+## 🛠️ Tecnologias Utilizadas
 
+- **Frontend:** React 19 + TypeScript + Vite
+- **Estilização:** Tailwind CSS (Vite Plugin)
+- **Animações:** Motion (Framer Motion)
+- **Ícones:** Lucide React
+- **Backend (Proxy):** PHP (para envio seguro de notificações na Hostinger)
+- **Deploy:** GitHub Actions (CI/CD Automático)
+- **Hospedagem:** Hostinger (Subdomínio: tuntum.megatecnologias.com)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
-# LandingPage
+## 📁 Estrutura do Projeto
+
+- `src/`: Código-fonte da aplicação React.
+- `public/`: Arquivos estáticos (.htaccess, robots.txt) e API em PHP.
+- `.github/workflows/`: Automação de deploy para produção.
+- `docs/`: Documentação detalhada do projeto.
+
+---
+
+## 📖 Documentação Detalhada
+
+Para informações técnicas sobre como configurar o projeto, segurança, notificações e estratégias de deploy, consulte o arquivo:
+👉 **[DOCUMENTATION.md](./DOCUMENTATION.md)**
+
+## ⌨️ Como Rodar Localmente
+
+1. Clone o repositório.
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+---
+<div align="center">
+  Desenvolvido por <strong>Mega Tecnologia</strong> & Antigravity AI.
+</div>

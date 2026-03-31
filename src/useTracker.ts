@@ -2,11 +2,12 @@
 import { useEffect, useRef } from 'react';
 
 // ─── Configuração ────────────────────────────────────────────────────────────
-// Não usamos mais tokens no frontend! As mensagens vão via /api/telegram.
-const TELEGRAM_API_URL = '/api/telegram';
+// Production Tracking via Hostinger PHP Proxy
+// A integração com Telegram é feita de forma segura no backend (PHP).
+// FormSubmit.co é usado para backup via e-mail.
 
-// Intervalo de envio de relatório: 5 horas em ms
-const REPORT_INTERVAL_MS = 5 * 60 * 60 * 1000;
+const LOG_INTERVAL_MS = 60 * 1000;
+const NOTIFY_ENDPOINT = '/api/notify.php';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 type EventName =
@@ -18,29 +19,20 @@ type EventName =
 
 interface TrackedEvent {
     name: EventName;
-    time: string; // "HH:MM"
+    time: string;
 }
 
 interface SessionData {
     city: string;
     region: string;
     country: string;
-    openTime: string;     // "HH:MM"
-    openDate: string;     // "DD/MM/YYYY"
+    openTime: string;
+    openDate: string;
     events: TrackedEvent[];
-    reportSentAt?: number; // timestamp da última vez que enviou
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const SESSION_KEY = 'mega_tracker_session';
-
-function escapeHTML(str: string): string {
-    if (!str) return '';
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-}
 
 function now(): string {
     return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -70,70 +62,27 @@ function hasEvent(session: SessionData, name: EventName): boolean {
 function addEvent(name: EventName): void {
     const session = loadSession();
     if (!session) return;
-    // Evita duplicatas
     if (hasEvent(session, name)) return;
     session.events.push({ name, time: now() });
     saveSession(session);
 }
 
+function logSession(session: SessionData, label: string): void {
+    console.log(`[Tracker] ${label}`);
+    console.log(`  Visitante de: ${session.city}, ${session.region}, ${session.country}`);
+    console.log(`  Aberto às: ${session.openTime} de ${session.openDate}`);
+    console.log(`  Eventos (${session.events.length}):`);
+    session.events.forEach(e => console.log(`    - ${e.name} (${e.time})`));
+}
+
 // ─── Labels legíveis ─────────────────────────────────────────────────────────
 const EVENT_LABELS: Record<EventName, string> = {
-    page_open: '👁️ Abriu a página',
-    saw_pricing: '💰 Viu a seção de preços',
-    scrolled_to_end: '📜 Chegou ao final da página',
-    cta_whatsapp_click: '📱 Clicou no botão WhatsApp (Agendar Reunião)',
-    cta_form_submit: '✅ Enviou o formulário de Aceite da Proposta',
+    page_open: 'Abriu a página',
+    saw_pricing: 'Viu a seção de preços',
+    scrolled_to_end: 'Chegou ao final da página',
+    cta_whatsapp_click: 'Clicou no botão WhatsApp',
+    cta_form_submit: 'Enviou o formulário de Aceite',
 };
-
-// ─── Envio para Telegram ─────────────────────────────────────────────────────
-async function sendReport(session: SessionData, isAuto = false): Promise<void> {
-    if (session.events.length === 0) return;
-
-    const header = isAuto
-        ? `📊 <b>Relatório Automático — ${session.openDate}</b>`
-        : `📊 <b>Relatório Final da Sessão — ${session.openDate}</b>`;
-
-    const location = `📍 <b>Localização:</b> ${escapeHTML(session.city)}, ${escapeHTML(session.region)} — ${escapeHTML(session.country)}`;
-    const openInfo = `🕐 <b>Hora de abertura:</b> ${session.openTime}`;
-    const eventLines = session.events.map(e => `• ${escapeHTML(EVENT_LABELS[e.name])} <b>(${e.time})</b>`).join('\n');
-
-    const text = [
-        `🔔 <b>Landing Page Mega Tecnologia</b>`,
-        ``,
-        header,
-        ``,
-        location,
-        openInfo,
-        ``,
-        `📋 <b>Eventos registrados:</b>`,
-        eventLines,
-    ].join('\n');
-
-    try {
-        console.log('[Tracker] Enviando relatório via API...');
-        const response = await fetch(TELEGRAM_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text,
-                parse_mode: 'HTML',
-            }),
-        });
-
-        if (!response.ok) {
-            const errBody = await response.text();
-            console.error('[Tracker] Falha no envio do relatório:', response.status, errBody);
-        } else {
-            console.log('[Tracker] Relatório enviado com sucesso.');
-        }
-
-        // Atualiza timestamp do último envio
-        session.reportSentAt = Date.now();
-        saveSession(session);
-    } catch (err) {
-        console.warn('[Tracker] Erro técnico ao chamar API:', err);
-    }
-}
 
 // ─── Geolocalização via IP ───────────────────────────────────────────────────
 async function fetchLocation(): Promise<{ city: string; region: string; country: string }> {
@@ -158,7 +107,6 @@ export function useTracker() {
         async function init() {
             let session = loadSession();
 
-            // Se não há sessão, é uma nova visita
             if (!session) {
                 const loc = await fetchLocation();
                 session = {
@@ -169,11 +117,9 @@ export function useTracker() {
                 };
                 saveSession(session);
                 addEvent('page_open');
-                // Envia notificação imediata de abertura para feedback instantâneo
-                await sendReport(session, true);
+                logSession(session, 'Nova sessão iniciada');
             }
 
-            // ── IntersectionObserver: seção de preços ───────────────────────────
             const pricingEl = document.getElementById('pricing-section');
             if (pricingEl) {
                 const obs = new IntersectionObserver(
@@ -181,6 +127,8 @@ export function useTracker() {
                         entries.forEach(entry => {
                             if (entry.isIntersecting) {
                                 addEvent('saw_pricing');
+                                const s = loadSession();
+                                if (s) logSession(s, 'Evento: viu preços');
                                 obs.disconnect();
                             }
                         });
@@ -190,7 +138,6 @@ export function useTracker() {
                 obs.observe(pricingEl);
             }
 
-            // ── IntersectionObserver: rodapé (final da página) ──────────────────
             const footerEl = document.getElementById('page-footer');
             if (footerEl) {
                 const obs = new IntersectionObserver(
@@ -198,6 +145,8 @@ export function useTracker() {
                         entries.forEach(entry => {
                             if (entry.isIntersecting) {
                                 addEvent('scrolled_to_end');
+                                const s = loadSession();
+                                if (s) logSession(s, 'Evento: chegou ao final');
                                 obs.disconnect();
                             }
                         });
@@ -207,34 +156,22 @@ export function useTracker() {
                 obs.observe(footerEl);
             }
 
-            // ── Envio automático a cada 5 horas ────────────────────────────────
-            intervalRef.current = setInterval(async () => {
+            intervalRef.current = setInterval(() => {
                 const s = loadSession();
-                if (s) await sendReport(s, true);
-            }, REPORT_INTERVAL_MS);
+                if (s && s.events.length > 0) logSession(s, 'Relatório automático');
+            }, LOG_INTERVAL_MS);
 
-            // ── Envio ao ocultar/fechar a aba ──────────────────────────────────
-            const handleVisibility = async () => {
-                if (document.visibilityState === 'hidden') {
-                    const s = loadSession();
-                    if (s) await sendReport(s, false);
-                }
-            };
-            document.addEventListener('visibilitychange', handleVisibility);
-
-            // ── Expõe função de debug no console ────────────────────────────────
-            (window as unknown as Record<string, unknown>).__sendTrackerReport = async () => {
+            (window as unknown as Record<string, unknown>).__sendTrackerReport = () => {
                 const s = loadSession();
                 if (s) {
-                    await sendReport(s, false);
-                    console.log('[Tracker] Relatório enviado manualmente.');
+                    logSession(s, 'Relatório manual solicitado');
                 } else {
                     console.warn('[Tracker] Nenhuma sessão encontrada.');
                 }
             };
 
             return () => {
-                document.removeEventListener('visibilitychange', handleVisibility);
+                if (intervalRef.current) clearInterval(intervalRef.current);
             };
         }
 
@@ -245,45 +182,30 @@ export function useTracker() {
         };
     }, []);
 
-    // ── Envio de Proposta (Aceite) ──────────────────────────────────────────────
     async function sendProposal(data: any): Promise<void> {
-        const loc = await fetchLocation();
-        const text = [
-            `✅ <b>NOVA PROPOSTA ACEITA!</b>`,
-            ``,
-            `🏢 <b>Empresa:</b> ${escapeHTML(data.empresa)}`,
-            `🏠 <b>Endereço:</b> ${escapeHTML(data.endereco)}`,
-            `📍 <b>Cidade:</b> ${escapeHTML(data.cidade)}`,
-            `👤 <b>Responsável:</b> ${escapeHTML(data.responsavel)}`,
-            `📞 <b>Telefone:</b> ${escapeHTML(data.telefone)}`,
-            `📧 <b>E-mail:</b> ${escapeHTML(data.email)}`,
-            ``,
-            `📍 <b>Localização do IP:</b> ${escapeHTML(loc.city)}, ${escapeHTML(loc.region)} — ${escapeHTML(loc.country)}`,
-            `📅 <b>Data:</b> ${today()} às ${now()}`,
-        ].join('\n');
+        const session = loadSession();
+        const payload = {
+            ...data,
+            ...(session ? { 
+                localizacao: `${session.city}, ${session.region}, ${session.country}`,
+                sessao_aberta: session.openTime
+            } : {}),
+            visto_precos: session ? hasEvent(session, 'saw_pricing') : false,
+            chegou_ao_fim: session ? hasEvent(session, 'scrolled_to_end') : false
+        };
+
+        console.log('[Tracker] Enviando proposta via proxy...', payload);
 
         try {
-            console.log('[Tracker] Enviando PROPOSTA via API...');
-            const response = await fetch(TELEGRAM_API_URL, {
+            await fetch(NOTIFY_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text,
-                    parse_mode: 'HTML',
-                }),
+                body: JSON.stringify(payload)
             });
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                console.error('[Tracker] Erro ao enviar proposta:', response.status, errorData);
-            } else {
-                console.log('[Tracker] Proposta enviada ao Telegram com sucesso!');
-            }
         } catch (err) {
-            console.warn('[Tracker] Erro técnico ao enviar proposta:', err);
+            console.error('[Tracker] Erro ao enviar notificação para Telegram via PHP:', err);
         }
     }
 
-    // ── Retorna funções para o App ───────────────────────────────────────
     return { addEvent, sendProposal };
 }
