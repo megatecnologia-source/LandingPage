@@ -1,0 +1,5 @@
+# Allow all search engines
+User-agent: *
+Allow: /
+# In case we have a sitemap later
+# Sitemap: https://tuntum.megatecnologias.com/sitemap.xml
