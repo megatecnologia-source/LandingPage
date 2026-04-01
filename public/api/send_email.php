@@ -22,7 +22,8 @@ if (in_array($origin, $allowed_origins)) {
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS')
+    exit;
 
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
@@ -40,7 +41,8 @@ $subject = "🚀 NOVA PROPOSTA ACEITA - SGA TUNTUM";
 $message = "Uma nova proposta foi aprovada pelo site.\n\n";
 $message .= "--- DADOS DO CLIENTE ---\n";
 foreach ($data as $key => $value) {
-    if ($key === '_subject' || is_array($value)) continue;
+    if ($key === '_subject' || is_array($value))
+        continue;
     $label = ucfirst($key);
     $message .= "$label: $value\n";
 }
