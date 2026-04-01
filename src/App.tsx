@@ -470,11 +470,17 @@ const App = () => {
                 if (btn) btn.disabled = true;
 
                 try {
-                  // 1. Notificar via Telegram Imediatamente
-                  await sendProposal(data);
+                   console.log('[Form] Iniciando envio das notificações...');
+                   
+                  // 1. Notificar via Telegram (Proxy PHP)
+                  try {
+                    await sendProposal(data);
+                  } catch (e) {
+                    console.warn('[Form] Notificação via Telegram falhou, mas seguindo com e-mail.', e);
+                  }
 
                   // 2. Enviar E-mail via FormSubmit.co (Gratuito)
-                  await fetch("https://formsubmit.co/ajax/gomesdocarmo@gmail.com", {
+                  const emailRes = await fetch("https://formsubmit.co/ajax/gomesdocarmo@gmail.com", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -483,10 +489,14 @@ const App = () => {
                     }),
                   });
 
+                  if (!emailRes.ok) {
+                    throw new Error('Falha no envio do e-mail.');
+                  }
+
                   alert('Proposta enviada com sucesso! Recebemos seus dados e entraremos em contato em breve.');
                   form.reset();
                 } catch (error) {
-                  console.error(error);
+                  console.error('[Form] Erro crítico no envio:', error);
                   alert('Ocorreu um erro ao enviar a proposta. Por favor, tente novamente ou entre em contato via WhatsApp.');
                 } finally {
                   if (btn) btn.disabled = false;
