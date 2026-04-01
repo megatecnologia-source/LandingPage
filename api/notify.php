@@ -5,10 +5,15 @@
  */
 
 // --- CONFIGURATION ---
-// Important: Ideally these should be in an environment variable or a protected file.
-// For now, I'll use placeholders. USER MUST REPLACE THESE.
-$botToken = '8554238832:AAHX__umRznZLeDDUne8z-gq8ElsO8fmYbc'; // <-- TELEGRAM_BOT_TOKEN
-$chatId = '2024041066';   // <-- TELEGRAM_CHAT_ID
+// Tentativa de carregar via Variáveis de Ambiente (Configuração Hpanel)
+$botToken = getenv('TELEGRAM_BOT_TOKEN');
+$chatId = getenv('TELEGRAM_CHAT_ID');
+
+// Fallback: Carregar de arquivo local protegido (Não rastreado pelo Git)
+if (!$botToken && file_exists(__DIR__ . '/config.php')) {
+    include_once __DIR__ . '/config.php';
+    // No config.php você deve definir: $botToken e $chatId
+}
 // --- END CONFIGURATION ---
 
 // Set headers for JSON and CORS if needed (though usually same-origin)
