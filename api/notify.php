@@ -19,20 +19,24 @@ if (!$botToken && file_exists(__DIR__ . '/config.php')) {
 // Set headers for JSON and CORS if needed (though usually same-origin)
 header('Content-Type: application/json');
 
-// --- SEGURANÇA ADICIONAL ---
-// Permite requisições apenas do seu domínio
-$allowed_origin = 'https://tuntum.megatecnologias.com';
+// --- SEGURANÇA REFINADA ---
+// Lista de origens permitidas
+$allowed_origins = [
+    'https://tuntum.megatecnologias.com',
+    'https://www.tuntum.megatecnologias.com',
+    'http://tuntum.megatecnologias.com',
+    'http://localhost:5173' // Para testes locais se houver proxy
+];
+
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-if ($origin !== $allowed_origin && !empty($origin)) {
-    // Em desenvolvimento local (localhost), você pode querer comentar esta verificação
-    // Mas para produção, ela impede que outros sites usem seu bot.
-    http_response_code(403);
-    echo json_encode(['error' => 'Acesso negado. Origem não permitida.']);
-    exit;
+if (in_array($origin, $allowed_origins)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    // Se não houver origin, permitimos o domínio principal como fallback
+    header('Access-Control-Allow-Origin: https://tuntum.megatecnologias.com');
 }
 
-header('Access-Control-Allow-Origin: ' . $allowed_origin);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
