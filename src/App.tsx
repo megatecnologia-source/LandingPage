@@ -470,15 +470,17 @@ const App = () => {
                 if (btn) btn.disabled = true;
 
                 try {
-                  console.log('[Form] Iniciando envio das notificações...');
+                  console.log('[Form] Iniciando envio EXCLUSIVO de e-mail...');
                   
-                  // 1. Notificar via Telegram (Proxy PHP)
+                  /* 
+                  // 1. Notificar via Telegram (Desativado temporariamente para testes de E-mail)
                   try {
                     const telRes = await sendProposal(data);
                     console.log('[Form] Telegram: Ok');
                   } catch (e) {
-                    console.warn('[Form] Notificação via Telegram falhou, mas seguindo com e-mail.', e);
+                    console.warn('[Form] Notificação via Telegram ignorada nos testes.', e);
                   }
+                  */
 
                   // 2. Enviar E-mail via FormSubmit.co (Gratuito)
                   console.log('[Form] Enviando e-mail...');
