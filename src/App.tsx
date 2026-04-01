@@ -482,9 +482,9 @@ const App = () => {
                   }
                   */
 
-                  // 2. Enviar E-mail via FormSubmit.co (Gratuito)
-                  console.log('[Form] Enviando e-mail...');
-                  const emailRes = await fetch("https://formsubmit.co/ajax/gomesdocarmo@gmail.com", {
+                  // 2. Enviar E-mail via PROXY INTERNO (Mais confiável e sem CORS)
+                  console.log('[Form] Enviando e-mail pelo seu servidor Hostinger...');
+                  const emailRes = await fetch("/api/send_email.php", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -493,16 +493,17 @@ const App = () => {
                     }),
                   });
 
+                  const emailData = await emailRes.json();
+
                   if (!emailRes.ok) {
-                    const errData = await emailRes.json();
-                    throw new Error(errData.message || 'O serviço de e-mail recusou o envio. Verifique se o e-mail destino está ativo no FormSubmit.');
+                    throw new Error(emailData.error || 'O servidor Hostinger recusou o envio.');
                   }
 
                   alert('Proposta enviada com sucesso! Recebemos seus dados e entraremos em contato em breve.');
                   form.reset();
                 } catch (error: any) {
                   console.error('[Form] Erro crítico no envio:', error);
-                  alert(`Ocorreu um erro: ${error.message}\n\nPor favor, tente novamente ou entre em contato via WhatsApp.`);
+                  alert(`Ocorreu um erro no servidor: ${error.message}\n\nPor favor, tente novamente ou entre em contato via WhatsApp.`);
                 } finally {
                   if (btn) btn.disabled = false;
                 }
