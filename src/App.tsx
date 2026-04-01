@@ -36,6 +36,8 @@ import { motion, AnimatePresence } from 'motion/react';
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
+  const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [formMessage, setFormMessage] = useState('');
   const { addEvent, sendProposal } = useTracker();
 
   const toggleAccordion = (index: number) => {
@@ -460,53 +462,46 @@ const App = () => {
             <form
               className="bg-white p-8 lg:p-12 rounded-3xl shadow-xl border border-slate-100 space-y-6"
               onSubmit={async (e) => {
-                addEvent('cta_form_submit');
                 e.preventDefault();
+                addEvent('cta_form_submit');
+                
                 const form = e.currentTarget;
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
 
-                const btn = form.querySelector('button');
-                if (btn) btn.disabled = true;
+                setFormStatus('loading');
+                setFormMessage('');
 
-                try {
-                  console.log('--- 🚀 VERSÃO ATUALIZADA (22:56) - USA HOSTINGER PHP ---');
-                  console.log('[Form] Iniciando envio EXCLUSIVO de e-mail pelo seu servidor Hostinger...');
-                  
-                  /* 
-                  // 1. Notificar via Telegram (Desativado temporariamente para testes de E-mail)
-                  try {
-                    const telRes = await sendProposal(data);
-                    console.log('[Form] Telegram: Ok');
-                  } catch (e) {
-                    console.warn('[Form] Notificação via Telegram ignorada nos testes.', e);
-                  }
-                  */
-
-                  // 2. Enviar E-mail via PROXY INTERNO (Mais confiável e sem CORS)
-                  console.log('[Form] Enviando e-mail pelo seu servidor Hostinger...');
-                  const emailRes = await fetch("/api/send_email.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                const [telegramResult, emailResult] = await Promise.allSettled([
+                  sendProposal(data),
+                  fetch('/api/send_email.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      _subject: "🚀 NOVA PROPOSTA ACEITA - SGA TUNTUM",
+                      _subject: '🚀 NOVA PROPOSTA ACEITA - SGA TUNTUM',
                       ...data
                     }),
-                  });
+                  }).then(res => {
+                    if (!res.ok) throw new Error('Falha no servidor de e-mail.');
+                    return res.json();
+                  })
+                ]);
 
-                  const emailData = await emailRes.json();
+                const emailOk = emailResult.status === 'fulfilled';
+                const telegramOk = telegramResult.status === 'fulfilled';
 
-                  if (!emailRes.ok) {
-                    throw new Error(emailData.error || 'O servidor Hostinger recusou o envio.');
-                  }
+                if (!telegramOk) {
+                  console.warn('[Form] Telegram falhou:', telegramResult.reason);
+                }
 
-                  alert('Proposta enviada com sucesso! Recebemos seus dados e entraremos em contato em breve.');
+                if (emailOk) {
+                  setFormStatus('success');
+                  setFormMessage('Proposta enviada com sucesso! Entraremos em contato em breve.');
                   form.reset();
-                } catch (error: any) {
-                  console.error('[Form] Erro crítico no envio:', error);
-                  alert(`Ocorreu um erro no servidor: ${error.message}\n\nPor favor, tente novamente ou entre em contato via WhatsApp.`);
-                } finally {
-                  if (btn) btn.disabled = false;
+                } else {
+                  console.error('[Form] E-mail falhou:', emailResult.reason);
+                  setFormStatus('error');
+                  setFormMessage('Ocorreu um erro no servidor. Por favor, tente novamente ou entre em contato via WhatsApp.');
                 }
               }}
             >
@@ -551,8 +546,20 @@ const App = () => {
                   <textarea name="observacao" rows={4} placeholder="Digite uma mensagem ou observação..." className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 resize-none"></textarea>
                 </div>
 
-                <button type="submit" className="w-full py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                  Aprovar Proposta
+                {formStatus === 'success' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm font-medium text-center">
+                    ✅ {formMessage}
+                  </div>
+                )}
+
+                {formStatus === 'error' && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 text-sm font-medium text-center">
+                    ❌ {formMessage}
+                  </div>
+                )}
+
+                <button type="submit" disabled={formStatus === 'loading'} className="w-full py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-primary/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {formStatus === 'loading' ? 'Enviando...' : 'Aprovar Proposta'}
                 </button>
               </div>
             </form>

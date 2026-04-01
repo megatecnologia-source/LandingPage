@@ -69,3 +69,16 @@
 
 # Disable Directory Browsing
 Options -Indexes
+
+# Protect /api directory - only accept POST (via JS fetch)
+<FilesMatch "^(notify|send_email)\.php$">
+    <LimitExcept POST OPTIONS>
+        Deny from all
+    </LimitExcept>
+</FilesMatch>
+
+# Block direct access to config.php anywhere
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
