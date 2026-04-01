@@ -470,7 +470,8 @@ const App = () => {
                 if (btn) btn.disabled = true;
 
                 try {
-                  console.log('[Form] Iniciando envio EXCLUSIVO de e-mail...');
+                  console.log('--- 🚀 VERSÃO ATUALIZADA (22:56) - USA HOSTINGER PHP ---');
+                  console.log('[Form] Iniciando envio EXCLUSIVO de e-mail pelo seu servidor Hostinger...');
                   
                   /* 
                   // 1. Notificar via Telegram (Desativado temporariamente para testes de E-mail)
