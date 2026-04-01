@@ -470,16 +470,18 @@ const App = () => {
                 if (btn) btn.disabled = true;
 
                 try {
-                   console.log('[Form] Iniciando envio das notificações...');
-                   
+                  console.log('[Form] Iniciando envio das notificações...');
+                  
                   // 1. Notificar via Telegram (Proxy PHP)
                   try {
-                    await sendProposal(data);
+                    const telRes = await sendProposal(data);
+                    console.log('[Form] Telegram: Ok');
                   } catch (e) {
                     console.warn('[Form] Notificação via Telegram falhou, mas seguindo com e-mail.', e);
                   }
 
                   // 2. Enviar E-mail via FormSubmit.co (Gratuito)
+                  console.log('[Form] Enviando e-mail...');
                   const emailRes = await fetch("https://formsubmit.co/ajax/gomesdocarmo@gmail.com", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -490,14 +492,15 @@ const App = () => {
                   });
 
                   if (!emailRes.ok) {
-                    throw new Error('Falha no envio do e-mail.');
+                    const errData = await emailRes.json();
+                    throw new Error(errData.message || 'O serviço de e-mail recusou o envio. Verifique se o e-mail destino está ativo no FormSubmit.');
                   }
 
                   alert('Proposta enviada com sucesso! Recebemos seus dados e entraremos em contato em breve.');
                   form.reset();
-                } catch (error) {
+                } catch (error: any) {
                   console.error('[Form] Erro crítico no envio:', error);
-                  alert('Ocorreu um erro ao enviar a proposta. Por favor, tente novamente ou entre em contato via WhatsApp.');
+                  alert(`Ocorreu um erro: ${error.message}\n\nPor favor, tente novamente ou entre em contato via WhatsApp.`);
                 } finally {
                   if (btn) btn.disabled = false;
                 }
@@ -506,7 +509,7 @@ const App = () => {
               <p className="hidden">
                 <label>Don't fill this out if you're human: <input name="bot-field" /></label>
               </p>
-              <div className="space-y-6">
+              <div className="space-y-6 overflow-hidden">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Empresa</label>
                   <input name="empresa" type="text" required placeholder="Nome da empresa" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20" />
